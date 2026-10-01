@@ -1,0 +1,28 @@
+# /etc/systemd/system/food-fairy.service
+# sudo systemctl daemon-reload && sudo systemctl enable --now food-fairy
+[Unit]
+Description=The Food Fairy website
+After=network.target
+
+[Service]
+Type=simple
+User=foodfairy
+WorkingDirectory=/srv/food-fairy
+EnvironmentFile=/srv/food-fairy/.env
+ExecStart=/usr/bin/node --disable-warning=ExperimentalWarning dist/server/index.js
+Restart=on-failure
+RestartSec=3
+
+# Hardening: the app only needs to write to ./data
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/food-fairy/data
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target
