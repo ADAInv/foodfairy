@@ -24,5 +24,5 @@ jobs:
           context: .
           file: Containerfile
           push: true
-          tags: ghcr.io/<ADAInv>/foodfairy:${{ github.sha }}
+          tags: ghcr.io/ADAInv/foodfairy:${{ github.sha }}
       - run: echo "Deploy digest ${{ steps.build.outputs.digest }}"
