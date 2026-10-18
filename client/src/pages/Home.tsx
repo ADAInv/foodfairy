@@ -68,7 +68,7 @@ function HeroPhoto() {
   return (
     <div className="bg-[linear-gradient(var(--color-fairy)_50%,var(--color-paper)_50%)]">
       <div className="mx-auto max-w-6xl px-4">
-        <div className="aspect-[4/3] overflow-hidden rounded-2xl sm:aspect-[21/9]">
+        <div className="aspect-4/3 overflow-hidden rounded-2xl sm:aspect-21/9">
           <FoodImage img={hero} alt="Food from The Food Fairy" sizes="(min-width: 1152px) 1120px, 94vw" eager />
         </div>
       </div>
@@ -96,7 +96,7 @@ function Cravings() {
         {cats.map((c) => (
           <li key={c.id}>
             <button type="button" onClick={() => go(c.slug)}
-              className="outline-type text-[2.6rem] leading-[1.15] hover:text-ink focus-visible:text-ink sm:text-[4.25rem]">
+              className="outline-type text-[2.6rem] leading-[1.15] hover:text-fairy focus-visible:text-fairy sm:text-[4.25rem]">
               {c.name}
             </button>
           </li>
@@ -144,7 +144,7 @@ function Founder() {
   const img = data?.images.founder ?? null;
   return (
     <section aria-labelledby="founder" className="mx-auto grid max-w-6xl items-center gap-x-16 gap-y-10 px-4 py-16 sm:py-24 md:grid-cols-[0.85fr_1.15fr]">
-      <div className="arch mx-auto aspect-[4/5] w-full max-w-[16rem] overflow-hidden bg-wash sm:max-w-sm">
+      <div className="arch mx-auto aspect-4/5 w-full max-w-[16rem] overflow-hidden bg-wash sm:max-w-sm">
         {img ? <FoodImage img={img} alt="Firdaos, founder of The Food Fairy" sizes="(min-width: 640px) 384px, 256px" /> : (
           <div className="grid h-full place-items-center"><span className="display display-italic text-[6rem] text-fairy" aria-hidden>F</span></div>
         )}

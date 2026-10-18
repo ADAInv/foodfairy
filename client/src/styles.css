@@ -78,7 +78,7 @@ body {
   font-family: var(--font-sans);
   font-weight: 600;
   letter-spacing: 0;
-  color: var(--color-paper);
+  color: var(--color-ink);
   -webkit-text-stroke: 3px var(--color-ink);
   paint-order: stroke fill;
   transition: color .2s;
