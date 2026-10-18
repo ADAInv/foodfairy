@@ -22,7 +22,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Containerfile
+          file: Dockerfile
           push: true
           tags: ghcr.io/adainv/foodfairy:${{ github.sha }}
       - run: echo "Deploy digest ${{ steps.build.outputs.digest }}"
