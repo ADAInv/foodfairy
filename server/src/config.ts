@@ -3,6 +3,7 @@
 
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { getSecret } from './secrets';
 
 function loadDotEnv(path: string): void {
   if (!existsSync(path)) return;
@@ -54,51 +55,47 @@ function url(name: string, value: string): string {
 
 export type CheckoutMode = 'square_api' | 'square_link' | 'disabled';
 
-const mode = (env.CHECKOUT_MODE ?? 'disabled') as CheckoutMode;
+const mode = (getSecret(checkout-mode) ?? 'disabled');
 if (!['square_api', 'square_link', 'disabled'].includes(mode)) {
-  throw new Error(`CHECKOUT_MODE must be square_api, square_link or disabled (got "${mode}")`);
+    throw new Error(`CHECKOUT_MODE must be square_api, square_link or disabled (got "${mode}")`);
 }
-
-const siteUrl = url('SITE_URL', (env.SITE_URL ?? 'http://localhost:3000').replace(/\/+$/, ''));
-
+const siteUrl = url('SITE_URL', (getSecret(site-url) ?? 'http://localhost:3000').replace(/\/+$/, ''));
 export const config = {
-  isProd,
-  port: Number(env.PORT ?? 3000),
-  host: env.HOST ?? '127.0.0.1',
-  siteUrl,
-  dataDir: resolve(process.cwd(), env.DATA_DIR ?? './data'),
-  clientDir: resolve(process.cwd(), env.CLIENT_DIR ?? './dist/client'),
-  // Secure cookies whenever the site is served over https, even if NODE_ENV was
-  // forgotten, so the admin session can never leak over plain http.
-  cookieSecure: bool('COOKIE_SECURE', isProd || siteUrl.startsWith('https://')),
-  trustProxy: bool('TRUST_PROXY', false),
-  timeZone: 'America/Toronto',
-  currency: 'CAD',
-
-  checkout: {
-    mode,
-    // square_api: server builds a one-off Square payment link per order.
-    squareEnv: (env.SQUARE_ENV ?? 'sandbox') as 'sandbox' | 'production',
-    accessToken: env.SQUARE_ACCESS_TOKEN ?? '',
-    locationId: env.SQUARE_LOCATION_ID ?? '',
-    apiVersion: env.SQUARE_VERSION ?? '2024-10-17',
-    webhookSignatureKey: env.SQUARE_WEBHOOK_SIGNATURE_KEY ?? '',
-    // Must match the notification URL registered in the Square dashboard exactly.
-    webhookUrl: env.SQUARE_WEBHOOK_URL ?? '',
-    // square_link: a single static Square checkout/store link. Orders are
-    // recorded as "awaiting payment" and marked paid by hand in admin.
-    staticCheckoutUrl: env.SQUARE_CHECKOUT_URL ?? ''
-  },
-
-  mail: {
-    host: env.SMTP_HOST ?? '',
-    port: Number(env.SMTP_PORT ?? 587),
-    secure: bool('SMTP_SECURE', false),
-    user: env.SMTP_USER ?? '',
-    pass: env.SMTP_PASS ?? '',
-    from: env.MAIL_FROM ?? 'The Food Fairy <orders@localhost>',
-    ownerEmail: env.OWNER_EMAIL ?? ''
-  }
+    isProd,
+    port: Number(getSecret(port) ?? 3000),
+    host: getSecret(host) ?? '127.0.0.1',
+    siteUrl,
+    dataDir: resolve(process.cwd(), getSecret(data-dir) ?? './data'),
+    clientDir: resolve(process.cwd(), getSecret(client-dir) ?? './dist/client'),
+    // Secure cookies whenever the site is served over https, even if NODE_ENV was
+    // forgotten, so the admin session can never leak over plain http.
+    cookieSecure: bool('COOKIE_SECURE', isProd || siteUrl.startsWith('https://')),
+    trustProxy: bool('TRUST_PROXY', false),
+    timeZone: 'America/Toronto',
+    currency: 'CAD',
+    checkout: {
+        mode,
+        // square_api: server builds a one-off Square payment link per order.
+        squareEnv: (getSecret(square-env) ?? 'sandbox'),
+        accessToken: getSecret(square-access-token) ?? '',
+        locationId: getSecret(square-location-id) ?? '',
+        apiVersion: getSecret(sqaure-version) ?? '2024-10-17',
+        webhookSignatureKey: getSecret(square-webhook-signature-key) ?? '',
+        // Must match the notification URL registered in the Square dashboard exactly.
+        webhookUrl: getSecret(square-webhook-url) ?? '',
+        // square_link: a single static Square checkout/store link. Orders are
+        // recorded as "awaiting payment" and marked paid by hand in admin.
+        staticCheckoutUrl: getSecret(square-checkout-url) ?? ''
+    },
+    mail: {
+        host: getSecret(smtp-host) ?? '',
+        port: Number(getSecret(smtp-port) ?? 587),
+        secure: bool('SMTP_SECURE', false),
+        user: getSecret(smtp-user) ?? '',
+        pass: getSecret(smtp-pass) ?? '',
+        from: getSecret(mail-from) ?? 'The Food Fairy <orders@localhost>',
+        ownerEmail: getSecret(mail-from) ?? ''
+    }
 };
 
 // Refuse to boot on a malformed setting rather than run half-configured.
