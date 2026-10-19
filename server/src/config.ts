@@ -55,18 +55,18 @@ function url(name: string, value: string): string {
 
 export type CheckoutMode = 'square_api' | 'square_link' | 'disabled';
 
-const mode = (getSecret(checkout-mode) ?? 'disabled');
+const mode = (getSecret("checkout-mode") ?? 'disabled');
 if (!['square_api', 'square_link', 'disabled'].includes(mode)) {
     throw new Error(`CHECKOUT_MODE must be square_api, square_link or disabled (got "${mode}")`);
 }
-const siteUrl = url('SITE_URL', (getSecret(site-url) ?? 'http://localhost:3000').replace(/\/+$/, ''));
+const siteUrl = url('SITE_URL', (getSecret("site-url") ?? 'http://localhost:3000').replace(/\/+$/, ''));
 export const config = {
     isProd,
-    port: Number(getSecret(port) ?? 3000),
-    host: getSecret(host) ?? '127.0.0.1',
+    port: Number(getSecret("port") ?? 3000),
+    host: getSecret("host") ?? '127.0.0.1',
     siteUrl,
-    dataDir: resolve(process.cwd(), getSecret(data-dir) ?? './data'),
-    clientDir: resolve(process.cwd(), getSecret(client-dir) ?? './dist/client'),
+    dataDir: resolve(process.cwd(), getSecret("data-dir") ?? './data'),
+    clientDir: resolve(process.cwd(), getSecret("client-dir") ?? './dist/client'),
     // Secure cookies whenever the site is served over https, even if NODE_ENV was
     // forgotten, so the admin session can never leak over plain http.
     cookieSecure: bool('COOKIE_SECURE', isProd || siteUrl.startsWith('https://')),
@@ -76,25 +76,25 @@ export const config = {
     checkout: {
         mode,
         // square_api: server builds a one-off Square payment link per order.
-        squareEnv: (getSecret(square-env) ?? 'sandbox'),
-        accessToken: getSecret(square-access-token) ?? '',
-        locationId: getSecret(square-location-id) ?? '',
-        apiVersion: getSecret(sqaure-version) ?? '2024-10-17',
-        webhookSignatureKey: getSecret(square-webhook-signature-key) ?? '',
+        squareEnv: (getSecret("square-env") ?? 'sandbox'),
+        accessToken: getSecret("square-access-token") ?? '',
+        locationId: getSecret("square-location-id") ?? '',
+        apiVersion: getSecret("square-version") ?? '2024-10-17',
+        webhookSignatureKey: getSecret("square-webhook-signature-key") ?? '',
         // Must match the notification URL registered in the Square dashboard exactly.
-        webhookUrl: getSecret(square-webhook-url) ?? '',
+        webhookUrl: getSecret("square-webhook-url") ?? '',
         // square_link: a single static Square checkout/store link. Orders are
         // recorded as "awaiting payment" and marked paid by hand in admin.
-        staticCheckoutUrl: getSecret(square-checkout-url) ?? ''
+        staticCheckoutUrl: getSecret("square-checkout-url") ?? ''
     },
     mail: {
-        host: getSecret(smtp-host) ?? '',
-        port: Number(getSecret(smtp-port) ?? 587),
+        host: getSecret("smtp-host") ?? '',
+        port: Number(getSecret("smtp-port") ?? 587),
         secure: bool('SMTP_SECURE', false),
-        user: getSecret(smtp-user) ?? '',
-        pass: getSecret(smtp-pass) ?? '',
-        from: getSecret(mail-from) ?? 'The Food Fairy <orders@localhost>',
-        ownerEmail: getSecret(mail-from) ?? ''
+        user: getSecret("smtp-user") ?? '',
+        pass: getSecret("smtp-pass") ?? '',
+        from: getSecret("mail-from") ?? 'The Food Fairy <orders@localhost>',
+        ownerEmail: getSecret("mail-from") ?? ''
     }
 };
 
