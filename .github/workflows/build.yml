@@ -1,28 +1,64 @@
+# .github/workflows/build.yml
+# Scans, builds and ships one site's image. Nothing is pushed unless every check passes.
+
 name: build
 on:
   push:
     branches: [main]
 
+# The job's GitHub token can read the code and publish packages. Nothing else.
 permissions:
   contents: read
   packages: write
+
+env:
+  # Lowercase only. One image name per site.
+  IMAGE: ghcr.io/adainv/foodfairy
+
+  # Scanner images, each pinned to a version AND a digest (see notes in chat).
+  GITLEAKS_IMAGE: ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:b109bc5f8f76a38196a3e413704fc5b9e3c32360bce4e4b603bd6f45b3721dbb #v8.30.1
+  OSV_IMAGE: ghcr.io/google/osv-scanner:v2.7.0@sha256:d2c46aa2483c4e02759bc25f2224d28a5ceeb3dca5a1ecd1f569fbed83a626f0 #v2.7.0
+  TRIVY_IMAGE: ghcr.io/aquasecurity/trivy:0.76.0@sha256:166061a4a15c64a94a3aab430659e2c166dc0815fbc54a222c6d56d64132f552 #v0.76.0
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
+      # Pin to the full 40-character commit SHA of a release, not a tag like @v4.
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-buildx-action@v3
-      - id: build
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile
-          push: true
-          tags: ghcr.io/adainv/foodfairy:${{ github.sha }}
-      - run: echo "Deploy digest ${{ steps.build.outputs.digest }}"
+          fetch-depth: 0              # full history, so the secrets scan sees old commits too
+          persist-credentials: false  # don't leave the GitHub token in .git/config for scanners to read
+
+      # 1. Secrets anywhere in the repo's history. Fails if any are found.
+      - name: Scan history for secrets (gitleaks)
+        run: |
+          docker run --rm -v "$PWD:/repo:ro" \
+            -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0='*' \
+            "$GITLEAKS_IMAGE" git --redact -v /repo
+
+      # 1. Known vulnerabilities in your npm dependencies. Fails if any are found.
+      - name: Scan dependencies (osv-scanner)
+        run: |
+          docker run --rm -v "$PWD:/src:ro" "$OSV_IMAGE" scan source -L /src/package-lock.json
+
+      # 2. Build. Typecheck and the app build run inside the Containerfile's build stage.
+      #    Add `npm test` there too once you have tests.
+      - name: Build image
+        run: docker build -f Dockerfile -t "$IMAGE:${{ github.sha }}" .
+
+      # 3. Scan the finished image. Fails on any critical vulnerability that has a fix available.
+      #    The image is handed over as a file, so the scanner never gets access to Docker itself.
+      - name: Scan image (Trivy)
+        run: |
+          docker save -o image.tar "$IMAGE:${{ github.sha }}"
+          docker run --rm -v "$PWD/image.tar:/image.tar:ro" "$TRIVY_IMAGE" \
+            image --input /image.tar --severity CRITICAL --ignore-unfixed --exit-code 1
+
+      # 4. Only now log in and push. No scanner ever ran while registry credentials existed.
+      - name: Push to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker push "$IMAGE:${{ github.sha }}"
+          echo "Deploy with: $(docker inspect --format '{{index .RepoDigests 0}}' "$IMAGE:${{ github.sha }}")"
