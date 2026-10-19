@@ -3,7 +3,7 @@
 
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { getSecret } from './secrets';
+import { getSecret } from './secrets.js';
 
 function loadDotEnv(path: string): void {
   if (!existsSync(path)) return;
