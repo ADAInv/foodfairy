@@ -80,6 +80,12 @@ const server = createServer(async (rawReq, res) => {
       throw new HttpError(404, 'Not found');
     }
 
+    if (req.method === "GET" && req.url === "/fairy") {
+    res.writeHead(200, { "content-type": "text/plain" });
+    res.end("ok");
+    return;
+    }
+
     // Everything else is the SPA shell with route-specific <head>.
     if (!config.isProd && existsSync(indexPath)) indexTemplate = readFileSync(indexPath, 'utf8');
     if (!indexTemplate) throw new HttpError(503, 'Site not built yet');
