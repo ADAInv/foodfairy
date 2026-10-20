@@ -14,8 +14,8 @@ import { formatPickupDate } from '../lib/time.js';
 
 function checkoutEnabled(): boolean {
   const c = config.checkout;
-  if (c.mode === 'square_api') return squareConfigured();
-  if (c.mode === 'square_link') return !!c.staticCheckoutUrl;
+  if (c.mode === 'square-api') return squareConfigured();
+  if (c.mode === 'square-link') return !!c.staticCheckoutUrl;
   return false;
 }
 
@@ -111,7 +111,7 @@ export function registerPublic(r: Router): void {
       return { id: lastId, code, token, drop };
     });
 
-    if (config.checkout.mode === 'square_link') {
+    if (config.checkout.mode === 'square-link') {
       return sendJson(res, 201, { redirectUrl: `/order/${order.token}`, external: false });
     }
 

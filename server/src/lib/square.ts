@@ -42,7 +42,7 @@ async function squareFetch(path: string, init: RequestInit = {}): Promise<unknow
 
 export function squareConfigured(): boolean {
   const c = config.checkout;
-  return c.mode === 'square_api' && !!c.accessToken && !!c.locationId;
+  return c.mode === 'square-api' && !!c.accessToken && !!c.locationId;
 }
 
 export async function createPaymentLink(input: CreateLinkInput): Promise<CreatedLink> {
