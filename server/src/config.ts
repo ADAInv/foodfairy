@@ -53,11 +53,13 @@ function url(name: string, value: string): string {
   return value;
 }
 
-export type CheckoutMode = 'square_api' | 'square_link' | 'disabled';
+
+
+export type CheckoutMode = 'square-api' | 'square-link' | 'disabled';
 
 const mode = (getSecret("checkout-mode") ?? 'disabled');
-if (!['square_api', 'square_link', 'disabled'].includes(mode)) {
-    throw new Error(`CHECKOUT_MODE must be square_api, square_link or disabled (got "${mode}")`);
+if (!['square-api', 'square-link', 'disabled'].includes(mode)) {
+    throw new Error(`CHECKOUT_MODE must be square-api, square-link or disabled (got "${mode}")`);
 }
 const siteUrl = url('SITE_URL', (getSecret("site-url") ?? 'http://localhost:3000').replace(/\/+$/, ''));
 export const config = {
